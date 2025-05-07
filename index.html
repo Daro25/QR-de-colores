@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" 
+          content="width=device-width, 
+                         initial-scale=1.0" />
+    <title>QR Code Generator</title>
+    <style>
+        h1, h3 {
+          color: white;
+        }
+        body, header {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          background-color: black;
+          color: white;
+        }
+    </style>
+</head>
+<body><center>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="jsQR.js"></script>
+  <!--script src="https://raw.githubusercontent.com/cozmo/jsQR/refs/heads/master/dist/jsQR.js"></script-->
+    <header>
+        <h3>QR code generator using qrcode.js</h3>
+        <h3>Enter QR code content and generate QR</h3>
+    </header>
+    <main>
+        <form action="/" 
+              id="qr-generation-form">
+            <textarea type="text"
+                   name="qr-code-content"
+                   id="qr-content" 
+                   value=""
+                   multiple="true"
+                   placeholder="Enter QR content"
+                   autocomplete="off">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Repellat, consectetur obcaecati. Dicta libero provident eos unde. Atque eius sint sapiente fugiat eaque qui, praesentium quisquam culpa unde voluptas. Rem, dolore commodi similique natus repellendus eligendi alias aperiam eaque esse? Laboriosam assumenda quo fugiat laudantium? Mollitia perferendis nisi eos nemo ad!</textarea>
+            <input type="submit" 
+                   value="Generate QR Code" />
+        </form><br />
+        <div id="qr-code" style="width: auto; display: inline-block;"></div>
+        <div id="content1" style="width: auto; display: inline-block;"></div><br><br>
+        <input type="file" id="qrImage" accept="Image/*">
+        <input type="button" value="Descomprimir" onclick="descromprimeQR()">
+        <pre id="textqr" style="width: calc(90vw -50px); overflow: hidden; text-align: justify; display: block; margin: 20px;"></pre>
+    </main>
+</body>
+<script>
+    let qrContentInput = document.getElementById("qr-content");
+    let qrGenerationForm = 
+    document.getElementById("qr-generation-form");
+    let qrCode;
+    let qrColorCompresed;
+
+    document.getElementById('qrImage').onchange = function () {
+      
+      const canvas = document.createElement('canvas');
+      const content = document.getElementById('content1');
+      content.innerHTML = '';
+      const file = document.getElementById('qrImage').files[0];
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.src = url;
+      const ctx = canvas.getContext('2d');
+      img.onload = function () {
+        const width = img.width;
+        const height = img.height;
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img,0,0);
+        img.width = 256;
+        img.height = 256;
+        content.appendChild(img);
+        const imageData = ctx.getImageData(0, 0, width, height);
+        const pixels = imageData.data;
+        const pixelArray = [];
+        for (let y = 0; y < (height/5); y++) {
+          pixelArray[y] = [];
+          for (let x = 0; x < (width/5); x++) {
+            const index = (y * width * 4 * 5) + (x * 4 * 5);
+            const r = pixels[index];
+            const g = pixels[index + 1];
+            const b = pixels[index + 2];
+            const hex = rgbToHex(r, g, b);
+            pixelArray[y][x] = hex;
+          }
+        }
+        qrColorCompresed = pixelArray;
+        console.log(qrColorCompresed);
+      }
+      
+    };
+    function descromprimeQR() {
+      const arrayQRRGB = descromprimeQRRGB(qrColorCompresed);
+      const qrR = QRtoRGBA(arrayQRRGB.r);console.log(qrR);
+      const qrG = QRtoRGBA(arrayQRRGB.g);console.log(qrG);
+      const qrB = QRtoRGBA(arrayQRRGB.b);console.log(qrB);
+      const contenido = jsQR(qrR.data, qrR.width, qrR.height).data +jsQR(qrG.data, qrG.width, qrG.height).data + jsQR(qrB.data, qrB.width, qrB.height).data;
+      console.log(contenido);
+      document.getElementById('textqr').innerText = decodeURIComponent(contenido);
+    }
+    
+    function generateQrCode(qrContent) {
+      return new QRCode("qr-code", {
+        text: qrContent,
+        width: 256,
+        height: 256,
+        colorDark: "#ffffff",
+        colorLight: "#000000",
+        correctLevel: QRCode.CorrectLevel.H,
+      });
+    }
+    
+    function treeText (str){
+      const l = Math.ceil(str.length/3);
+      return result = [
+        str.substring(0,l),
+        str.substring(l, l*2),
+        str.substring(l*2)
+      ]
+    }
+    // Event listener for form submit event
+    qrGenerationForm.addEventListener("submit", function (event) {
+      // Prevent form submission
+      event.preventDefault();
+      let qrContent = encodeURIComponent(qrContentInput.value);
+      if (qrCode == null && qrContent.length>0) {
+        // Generate code initially
+        qrCode = generateQrCode(treeText(qrContent)[0]);
+        obtenerQRColor(qrCode, qrContent)
+      } else if (qrContent.length>0) {
+        // If code already generated then make 
+        // again using same object
+        qrCode.makeCode(treeText(qrContent)[0]);
+        obtenerQRColor(qrCode, qrContent);
+      }
+      console.log(qrCode._oQRCode.modules[0].length);
+    });
+    function QRtoRGBA(qrArray) {
+      var pixeles = [];
+      for (let i = 0; i < qrArray.length; i++) {
+        const element2 = qrArray[i];
+        for (let j = 0; j < element2.length; j++) {
+          const valor = qrArray[i][j]?0:255;
+          pixeles.push(valor);
+          pixeles.push(valor);
+          pixeles.push(valor);
+          pixeles.push(255);
+        }
+      }
+      return {
+        data: new Uint8ClampedArray(pixeles),
+        width: qrArray.length,
+        height: qrArray.length
+      }
+    }
+    function descromprimeQRRGB(qrColor) {
+      const n = qrColor.length;
+      var R = Array.from({length: n}, ()=> new Array(n));
+      var G = Array.from({length: n}, ()=> new Array(n));
+      var B = Array.from({length: n}, ()=> new Array(n));
+      for (let i = 0; i < qrColor.length; i++) {
+        const element2 = qrColor[i];
+        for (let j = 0; j < element2.length; j++) {
+          const element = element2[j];
+          const rgb = getRGB(element);
+          R[i][j] = (rgb.r >= 170)? true : false;
+          G[i][j] = (rgb.g >= 170)? true : false;
+          B[i][j] = (rgb.b >= 170)? true : false;
+        }
+      }
+      return {
+				r: R,
+				g: G,
+				b: B,
+			}
+    }
+
+    function getRGB(hex){
+			const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+			return result ? {
+				r: parseInt(result[1], 16),
+				g: parseInt(result[2], 16),
+				b: parseInt(result[3], 16),
+			} : null;
+		}
+
+    function rgbToHex(r, g, b) {
+      return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+    }
+
+    function obtenerQRColor(qrCode, qrContent) {
+      const content = document.getElementById('content1')
+        const strArray = treeText(qrContent);
+        let n = qrCode._oQRCode.modules[0].length;
+        var qrcolor = Array.from({length: n}, ()=> new Array(n));
+        const l = 5;
+        for (let i = 0; i < qrcolor.length; i++) {
+          const element = qrcolor[i];
+          for (let j = 0; j < element.length; j++) {
+            qrcolor[i][j] = '#';
+          }
+        }
+        for (let a = 0; a < strArray.length; a++) {
+          const str = strArray[a];
+          qrCode.makeCode(str);
+          content.innerHTML = ''
+          const array = qrCode._oQRCode.modules;
+          for (let i = 0; i < array.length; i++) {
+            const element = array[i];
+            for (let j = 0; j < element.length; j++) {
+              const valor = element[j];
+              if (valor) {
+                qrcolor[i][j] = qrcolor[i][j] + 'FF';
+              } else {
+                qrcolor[i][j] = qrcolor[i][j] + '00';
+              }
+            }
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = l*n;
+        canvas.height = l*n;
+        const ctx = canvas.getContext('2d');
+        //-----------------------------------------------
+        for (let i = 0; i < qrcolor.length; i++) {
+          const element = qrcolor[i];
+          for (let j = 0; j < element.length; j++) {
+            const valor = element[j];
+            ctx.fillStyle = qrcolor[i][j]
+            ctx.fillRect(i*l,j*l,l,l);
+          }
+        }
+        //-----------------------------------------------
+        const dataURL = canvas.toDataURL();
+        const img = new Image();
+        img.src = dataURL;
+        img.style.display = 'block';
+        img.height = 256;
+        img.width = 256;
+        canvas.style.display = 'none';
+        content.appendChild(img);
+        //------------------------------------------------
+        try {
+          qrCode.makeCode(qrContent);
+        } catch (error) {
+          console.log('En realidad el qr convencional no logró emular el texto completo');
+        }
+        console.log(qrcolor[0].length);
+        console.log(qrcolor);
+        
+        qrColorCompresed = qrcolor;
+    }
+</script>
+
+</html>
