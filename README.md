@@ -1,56 +1,42 @@
+# QR de Colores — Tres veces más información
 
-QR de Colores — Tres veces más información
+Este proyecto es una prueba de concepto de **códigos QR de colores** que permiten almacenar más información utilizando los canales RGB. Cada canal (Rojo, Verde, Azul) representa un QR diferente. Al combinarse, forman un solo QR a color que puede ser leído y reconstruido para extraer los tres QR originales.
 
-Revoluciona el uso del código QR tradicional usando los canales de color RGB para almacenar 3 QR en una sola imagen.
+## ¿Por qué?
 
-¿Cómo funciona?
+Los QR de colores pueden abrir nuevas posibilidades en:
 
-Cada canal de color (Rojo, Verde, Azul) representa un QR diferente. Al combinar los tres canales, obtenemos un QR de colores capaz de almacenar más datos sin aumentar el tamaño visual.
+- **Mensajes multilingües**: un idioma por canal  
+- **Marketing**: más datos en un mismo espacio  
+- **Logística y producción**: codificación avanzada  
+- **Educación y creatividad digital**
 
-Este proyecto es una prueba de concepto funcional que demuestra cómo generar y leer estos QR de colores usando solo JavaScript en el navegador.
+Este proyecto busca **inspirar soluciones creativas** a partir de una idea simple: aprovechar el color para expandir la capacidad informativa del QR tradicional.
 
-Aplicaciones potenciales
+## ¿Qué incluye el repositorio?
 
-Mensajes multilingües: 3 idiomas, un solo escaneo
+- `index.html` — Lector de QR de colores hecho en JavaScript, sin dependencias externas.  
+- `qr_color_ejemplo.png` — Ejemplo visual de un QR de colores generado.  
+- `contenido_qr.txt` — Texto reconstruido desde los tres QR del ejemplo.
 
-Marketing: más datos en menos espacio
+## Tecnologías usadas
 
-Organización de almacenes: codificación avanzada para productos
+- [`QRCode.js`](https://github.com/davidshimjs/qrcodejs) — Generación de QR  
+- [`jsQR`](https://github.com/cozmo/jsQR) — Lectura de QR desde imagen
 
-Educación y tecnología creativa
+## ¿Cómo probarlo?
 
+1. Clona este repositorio o descarga los archivos.
+2. Abre `index.html` en tu navegador (funciona localmente).
+3. Carga una imagen de un QR de colores (usa `qr_color_ejemplo.png` si no tienes uno propio).
+4. El script separará los canales y leerá el contenido de cada uno.
 
-Contenido del repositorio
+## Contribuye o reinventa
 
-index.html — Código fuente del lector/generador (sin dependencias externas, corre en navegador)
+Este proyecto está pensado para ser un punto de partida. Mejora el lector, crea un generador web, adapta la idea a otro lenguaje o propón nuevas aplicaciones.
 
-qr_color_ejemplo.png — Imagen de un QR de colores ya generado
+**¿Qué harías tú con el triple de datos en un solo código?**
 
-contenido_qr.txt — El contenido reconstruido desde los 3 QR originales
+---
 
-
-Librerías utilizadas
-
-QrCode — Para generar QR clásicos
-
-jsQR — Para leer QR desde imágenes
-
-
-Cómo probarlo
-
-1. Clona el repositorio o descarga el ZIP.
-
-
-2. Abre index.html en tu navegador.
-
-
-3. Sube una imagen de un QR de colores o usa el ejemplo incluido.
-
-
-4. El script separará los canales y decodificará cada QR individualmente.
-
-
-
-¡Inspírate!
-
-Este proyecto no busca reemplazar el QR tradicional, sino inspirar nuevas formas de pensar y comunicar datos. ¿Qué harías tú con el triple de espacio?
+*Hecho con curiosidad y pasión por el ingenio.*
