@@ -1,54 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" 
-          content="width=device-width, 
-                         initial-scale=1.0" />
-    <title>QR Code Generator</title>
-    <style>
-        h1, h3 {
-          color: white;
-        }
-        body, header {
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          background-color: black;
-          color: white;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body><center>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="jsQR.js"></script>
-  <!--script src="https://raw.githubusercontent.com/cozmo/jsQR/refs/heads/master/dist/jsQR.js"></script-->
-    <header>
-        <h3>QR code generator using qrcode.js</h3>
-        <h3>Enter QR code content and generate QR</h3>
-    </header>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="jsQR.js"></script>
     <main>
-        <form action="/" 
-              id="qr-generation-form">
-            <textarea type="text"
+      <h1>Generador y lector de QR Color</h1>
+      <h2>Scon estos QR puedes triplicar el espacio de un QR normal</h2>
+      <img src="./t_rex_animQR.png" width="250px" height="250px">
+      <p>Esta opción es para cargar una imagen o animación en un QR Color</p>
+      <p>Nota: La imagen está limitada a una imagen estatica de color de 64x64 px o a una animación de 4 frames de 16x16 px cada frame.</p>
+      <input type="file" id="fileInput" accept="Image/*">
+      <label for="frameWidth">Ancho de frame:</label><input type="number" id="frameWidth" value="32" min="1"> <br>
+
+      <label for="modeSelect">Modo:</label>
+      <select id="modeSelect">
+          <option value="0">loop</option>
+          <option value="1">pingpong</option>
+          <option value="2">once</option>
+          <option value="3">hold</option>
+          <option value="4">reverse</option>
+        </select><br>
+
+      <label for="effectSelect">Efecto:</label>
+      <select id="effectSelect">
+          <option value="0">none</option>
+          <option value="1">fade</option>
+          <option value="2">glitch</option>
+          <option value="3">flash</option>
+          <option value="4">slide</option>
+          <option value="5">zoom</option>
+          <option value="6">rotate</option>
+          <option value="7">invert</option>
+          <option value="8">blink</option>
+          <option value="9">shake</option>
+          <option value="10">bounce</option>
+        </select>
+
+      <label>Delay (ms):</label><input type="number" id="delayInput" value="100" min="1">
+      <button id="playBtn">Reproducir</button>
+      <button id="pauseBtn">Pausar</button><br>
+
+      <!-- Canvas con altura fija a 120px -->
+      <canvas id="previewCanvas" height="120"></canvas>
+      <hr>
+      <p>Este apartado sirve para convertir un texto de hasta 8000 caracterés en un qr color.</p>
+      <p>Con estos QR color se ha aumentado el nivel máximo que un QR tradicional.</p>
+      <textarea type="text"
                    name="qr-code-content"
                    id="qr-content" 
                    value=""
                    multiple="true"
                    placeholder="Enter QR content"
-                   autocomplete="off">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Repellat, consectetur obcaecati. Dicta libero provident eos unde. Atque eius sint sapiente fugiat eaque qui, praesentium quisquam culpa unde voluptas. Rem, dolore commodi similique natus repellendus eligendi alias aperiam eaque esse? Laboriosam assumenda quo fugiat laudantium? Mollitia perferendis nisi eos nemo ad!</textarea>
-            <input type="submit" 
-                   value="Generate QR Code" />
-        </form><br />
-        <div id="qr-code" style="width: auto; display: inline-block;"></div>
-        <div id="content1" style="width: auto; display: inline-block;"></div><br><br>
-        <input type="file" id="qrImage" accept="Image/*">
-        <input type="button" value="Descomprimir" onclick="descromprimeQR()">
-        <pre id="textqr" style="width: calc(90vw -50px); overflow: hidden; text-align: justify; display: block; margin: 20px;"></pre>
+                   autocomplete="off"></textarea>
+      <hr>
+      <input type="button" value="Generar QR Color" onclick="onclickGenerated()"/>
+      <p>El QR tradicional representa una tercera parte del QR Color por eso al escanear el QR normal habrá información incompleta.</p>
+      <p>Nota: Los lectores actuales no entienden los Qr Color actualmente.</p><br>
+      <!-- QR´s =============================================--> 
+      <div id="content1"></div>
+      <div class="simbol">=</div>
+      <div class="qr" id="qr-codeR"></div>
+      <div class="simbol">+</div>
+      <div class="qr" id="qr-codeG"></div>
+      <div class="simbol">+</div>
+      <div class="qr" id="qr-codeB"></div>
+      <br><br>
+      <!--===================================================-->
+      <input type="file" id="qrImage" accept="Image/*">
+      <input type="button" value="Descomprimir" onclick="descromprimeQR()">
+      <br>
+      <pre id="textqr"></pre>
+      <canvas id="canvasPresent"></canvas>
     </main>
-</body>
+    <script src="main.js"></script>
 <script>
     let qrContentInput = document.getElementById("qr-content");
     let qrGenerationForm = 
@@ -100,46 +130,123 @@
       const qrG = QRtoRGBA(arrayQRRGB.g);console.log(qrG);
       const qrB = QRtoRGBA(arrayQRRGB.b);console.log(qrB);
       const contenido = jsQR(qrR.data, qrR.width, qrR.height).data +jsQR(qrG.data, qrG.width, qrG.height).data + jsQR(qrB.data, qrB.width, qrB.height).data;
-      console.log(contenido);
+      console.log(contenido.split('\n'));
+      try {mostrarImGofQR(contenido.split('\n'));} catch(error){console.log('No es imagen');}
       document.getElementById('textqr').innerText = decodeURIComponent(contenido);
     }
-    
-    function generateQrCode(qrContent) {
-      return new QRCode("qr-code", {
+    function mostrarImGofQR(array) {
+      const arr1 = array[0].split(':');
+      const arr2 = array[1].split(':');
+      const arr3 = array[2].split(':');
+      var red = arr1[0] == 'R' ? arr1 : arr2[0] == 'R' ? arr2 : arr3[0] == 'R' ? arr3 : null;
+      var green = arr1[0] == 'G' ? arr1 : arr2[0] == 'G' ? arr2 : arr3[0] == 'G' ? arr3 : null;
+      var blue = arr1[0] == 'B' ? arr1 : arr2[0] == 'B' ? arr2 : arr3[0] == 'B' ? arr3 : null;
+      console.log(red,green,blue);
+      const widths = green[2];
+      const heights = red[2];
+      const frames = blue[2];
+      const Modo = red[3];
+      const Efecto = green[3];
+      const Delay = blue[3];
+      const scale = 5;
+      const pixelOrigin = {
+        R: Array.from(atob(red[1])).map(c => c.charCodeAt(0)),
+        G: Array.from(atob(green[1])).map(c => c.charCodeAt(0)),
+        B: Array.from(atob(blue[1])).map(c => c.charCodeAt(0)),
+      };
+      console.log(pixelOrigin);
+      const canvas = document.getElementById('canvasPresent');
+      canvas.width = widths*scale*frames;
+      canvas.height = heights*scale;
+      const ctx = canvas.getContext('2d');
+      const imageData = ctx.createImageData(widths*frames, heights);
+      const data = imageData.data;
+      //console.log(widths);
+      //var h = 0;
+      for (let i = 0; i < widths*heights*frames; i++) {
+        const j = i * 4;
+        data[j] = pixelOrigin.R[i];
+        data[j+1] = pixelOrigin.G[i];
+        data[j+2] = pixelOrigin.B[i];
+        data[j+3] = 255;
+      }
+      //Crear un canvas auxiliar de 16x16
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = widths*frames;
+      tempCanvas.height = heights;
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCtx.putImageData(imageData,0,0);
+      //dibujar escalada en el canvas principal sin suavizado
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(tempCanvas,0,0,widths*frames*scale,heights*scale);
+      //---------cargar animación -----------
+      document.getElementById('frameWidth').value = widths;
+      document.getElementById('modeSelect').value = Modo+'';
+      document.getElementById('effectSelect').value = Efecto+'';
+      document.getElementById('delayInput').value = Delay;
+      tempCanvas.toBlob((blob)=>{
+        const file = new File([blob], 'image.png', {type:'image/png',});
+        let inputFile = document.getElementById("fileInput");
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        inputFile.files = dataTransfer.files;
+        //Disparar evento onchange
+        const event = new Event('change',{bubbles: true});
+        inputFile.dispatchEvent(event);
+      }, 'image/png');
+    }
+    //Genera un código QR utilizando la biblioteca qrcodejs recive un texto como parámetro
+    function generateQrCodeR(qrContent) {
+      return new QRCode("qr-codeR", {
         text: qrContent,
         width: 256,
         height: 256,
         colorDark: "#ffffff",
         colorLight: "#000000",
-        correctLevel: QRCode.CorrectLevel.H,
+        correctLevel: QRCode.CorrectLevel.L,
       });
     }
-    
-    function treeText (str){
-      const l = Math.ceil(str.length/3);
-      return result = [
-        str.substring(0,l),
-        str.substring(l, l*2),
-        str.substring(l*2)
-      ]
+    function generateQrCodeG(qrContent) {
+      return new QRCode("qr-codeG", {
+        text: qrContent,
+        width: 256,
+        height: 256,
+        colorDark: "#ffffff",
+        colorLight: "#000000",
+        correctLevel: QRCode.CorrectLevel.L,
+      });
     }
-    // Event listener for form submit event
-    qrGenerationForm.addEventListener("submit", function (event) {
-      // Prevent form submission
-      event.preventDefault();
+    function generateQrCodeB(qrContent) {
+      return new QRCode("qr-codeB", {
+        text: qrContent,
+        width: 256,
+        height: 256,
+        colorDark: "#ffffff",
+        colorLight: "#000000",
+        correctLevel: QRCode.CorrectLevel.L,
+      });
+    }
+    //---------------------------------------------------------------
+    function onclickGenerated()  {
       let qrContent = encodeURIComponent(qrContentInput.value);
-      if (qrCode == null && qrContent.length>0) {
+      if (qrCode == null && qrData.R?.length>0) {
         // Generate code initially
-        qrCode = generateQrCode(treeText(qrContent)[0]);
-        obtenerQRColor(qrCode, qrContent)
-      } else if (qrContent.length>0) {
+        qrCode = generateQrCodeG(qrData.G);
+        qrCode = generateQrCodeB(qrData.B);
+        qrCode = generateQrCodeR(qrData.R);
+        obtenerQRColor(qrCode, qrData)
+      } else if (qrData.R?.length>0){
         // If code already generated then make 
         // again using same object
-        qrCode.makeCode(treeText(qrContent)[0]);
-        obtenerQRColor(qrCode, qrContent);
+        location.reload();
+        qrCode.makeCode(qrData.R);
+        obtenerQRColor(qrCode, qrData);
+      } else {
+        qrColordeTextoTxt();
       }
       console.log(qrCode._oQRCode.modules[0].length);
-    });
+    }
+    //Convierte un código QR en una imagen RGBA
     function QRtoRGBA(qrArray) {
       var pixeles = [];
       for (let i = 0; i < qrArray.length; i++) {
@@ -174,10 +281,10 @@
         }
       }
       return {
-				r: R,
-				g: G,
-				b: B,
-			}
+			r: R,
+			g: G,
+			b: B,
+		}
     }
 
     function getRGB(hex){
@@ -192,8 +299,187 @@
     function rgbToHex(r, g, b) {
       return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
     }
+    //Genera un código QR con colores y lo muestra en la página web utiliza content1 y qr-code
+    function obtenerQRColor(qrCode, qrData) {
+      const content = document.getElementById('content1')
+        //const strArray = treeText(qrContent);
+        const strArray = [qrData.R+'\n',qrData.G+'\n',qrData.B];
+        let n = qrCode._oQRCode.modules[0].length;
+        var qrcolor = Array.from({length: n}, ()=> new Array(n));//array bidimencional
+        const l = 5;
+        for (let i = 0; i < qrcolor.length; i++) {
+          const element = qrcolor[i];
+          for (let j = 0; j < element.length; j++) {
+            qrcolor[i][j] = '#';
+          }
+        }
+        for (let a = 0; a < strArray.length; a++) {
+          const str = strArray[a];
+          qrCode.makeCode(str);
+          content.innerHTML = ''
+          const array = qrCode._oQRCode.modules;
+          for (let i = 0; i < array.length; i++) {
+            const element = array[i];
+            for (let j = 0; j < element.length; j++) {
+              const valor = element[j];
+              if (valor) {
+                qrcolor[i][j] = qrcolor[i][j] + 'FF';
+              } else {
+                qrcolor[i][j] = qrcolor[i][j] + '00';
+              }
+            }
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = l*n;
+        canvas.height = l*n;
+        const ctx = canvas.getContext('2d');
+        //-----------------------------------------------
+        for (let i = 0; i < qrcolor.length; i++) {
+          const element = qrcolor[i];
+          for (let j = 0; j < element.length; j++) {
+            const valor = element[j];
+            ctx.fillStyle = qrcolor[i][j]
+            ctx.fillRect(i*l,j*l,l,l);
+          }
+        }
+        //-----------------------------------------------
+        const dataURL = canvas.toDataURL();
+        const img = new Image();
+        img.src = dataURL;
+        img.style.display = 'block';
+        img.height = 256;
+        img.width = 256;
+        canvas.style.display = 'none';
+        content.appendChild(img);
+        //------------------------------------------------
+        try {
+          qrCode.makeCode(qrContent);
+        } catch (error) {
+          console.log('En realidad el qr convencional no logró emular el texto completo');
+        }
+        console.log(qrcolor[0].length);
+        console.log(qrcolor);
+        
+        qrColorCompresed = qrcolor;
+    }
+    var qrData = [];
+document.getElementById("fileInput").addEventListener("change", function (e) {
+    const file = e.target.files[0];
+    if (!file) return;
 
-    function obtenerQRColor(qrCode, qrContent) {
+    const img = new Image();
+    img.onload = function () {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+
+        const imageData = ctx.getImageData(0, 0, img.width, img.height);
+        const data = imageData.data;
+
+        // Canal: 0=R, 1=G, 2=B
+        const channel = 0;
+        const width = img.width;
+        const height = img.height;
+        const pixeles = {R:[],G:[],B:[]};
+
+        for (let y = 0; y < height; y++) {
+            const row = [];
+            for (let x = 0; x < width; x++) {
+                const index = (y * width + x) * 4;
+                const R = data[index + 0];
+                const G = data[index + 1];
+                const B = data[index + 2];
+                const alpha = data[index + 3]; // Canal A (0-255)
+                if (alpha > 0) {
+                    pixeles.R.push(R);
+                    pixeles.G.push(G);
+                    pixeles.B.push(B);
+                } else {
+                    pixeles.R.push(255);
+                    pixeles.G.push(255);
+                    pixeles.B.push(255);
+                }
+            }
+        }
+        ancho = frameWidthInput.value;
+        modo = modeSelect.value;
+        efecto = effectSelect.value;
+        delay = delayInput.value;
+        alto = img.height;
+        frames = Math.round(img.width/ancho);
+        qrData = {
+            R: 'R:'+btoa(String.fromCharCode(...pixeles.R))+':'+alto+':'+modo,
+            G: 'G:'+btoa(String.fromCharCode(...pixeles.G))+':'+ancho+':'+efecto,
+            B: 'B:'+btoa(String.fromCharCode(...pixeles.B))+':'+frames+':'+delay
+        }
+        console.log(qrData);
+        
+    };
+    img.src = URL.createObjectURL(file);
+});
+    // IMPORTANTE: esta funcion se llama para convertir Texto a Qr
+    function qrColordeTextoTxt(){
+      let qrContent = encodeURIComponent(qrContentInput.value);
+      if (qrCode == null && qrContent.length>0) {
+        // Generate code initially
+        qrCode = generateQrCodeTxtG(treeText(qrContent)[1]);
+        qrCode = generateQrCodeTxtB(treeText(qrContent)[2]);
+        qrCode = generateQrCodeTxtR(treeText(qrContent)[0]);
+        obtenerQRColorTxt(qrCode, qrContent)
+      } else if (qrContent.length>0) {
+        // If code already generated then make 
+        // again using same object
+        location.reload();
+        qrCode.makeCode(treeText(qrContent)[0]);
+        obtenerQRColorTxt(qrCode, qrContent);
+      } else {
+        console.log('no se detectó nada para generar el qr');
+      }
+    }
+    //------------------------------------------------------
+    function generateQrCodeTxtR(qrContent) {
+      return new QRCode("qr-codeR", {
+        text: qrContent,
+        width: 256,
+        height: 256,
+        colorDark: "#ffffff",
+        colorLight: "#000000",
+        correctLevel: QRCode.CorrectLevel.H,
+      });
+    }
+    function generateQrCodeTxtG(qrContent) {
+      return new QRCode("qr-codeG", {
+        text: qrContent,
+        width: 256,
+        height: 256,
+        colorDark: "#ffffff",
+        colorLight: "#000000",
+        correctLevel: QRCode.CorrectLevel.H,
+      });
+    }
+    function generateQrCodeTxtB(qrContent) {
+      return new QRCode("qr-codeB", {
+        text: qrContent,
+        width: 256,
+        height: 256,
+        colorDark: "#ffffff",
+        colorLight: "#000000",
+        correctLevel: QRCode.CorrectLevel.H,
+      });
+    }
+    //---------------------------------------------------------
+    function treeText (str){
+      const l = Math.ceil(str.length/3);
+      return result = [
+        str.substring(0,l),
+        str.substring(l, l*2),
+        str.substring(l*2)
+      ]
+    }
+    function obtenerQRColorTxt(qrCode, qrContent) {
       const content = document.getElementById('content1')
         const strArray = treeText(qrContent);
         let n = qrCode._oQRCode.modules[0].length;
@@ -256,5 +542,6 @@
         qrColorCompresed = qrcolor;
     }
 </script>
-
+</center>
+</body>
 </html>

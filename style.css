@@ -1,0 +1,57 @@
+body{
+    background-color: black;
+    color: cyan;
+}
+p{
+    width: 60%;
+    text-align: justify;
+}
+pre{
+    width: auto;
+    max-width: calc(90% - 50px);
+    overflow: hidden; 
+    text-align: justify;
+    margin: 20px auto;
+    display: inline-block;
+}
+label{
+    color: lightgreen;
+    font-weight: bolder;
+    text-shadow: 3px 3px 4px green;
+}
+input{
+    background-color: #404963;
+    color: white;
+    text-shadow: 2px 2px 4px white;
+}
+textarea{
+    background: linear-gradient(#404963, #000, #25092b);
+    color: white;
+}
+select{
+    background-color: black;
+    color: white;
+}
+.qr, #content1{
+    width: 256px; 
+    height: 256px; 
+    background: black; 
+    border: 2px solid white;
+}
+#content1{
+    display: inline-block;
+}
+.qr , .simbol{
+    display: none;
+    color: white;
+    font-weight: bolder;
+    font-size: 2em;
+    margin: 2px;
+}
+#content1:active ~ .qr , #content1:active ~ .simbol {
+    display: inline-block;
+}
+input[type="button"]{
+    padding: 20px;
+    border-radius: 10px;
+}
